@@ -1,0 +1,49 @@
+#!/bin/bash
+# Downloads data from the nih's ftp resource and moves it to s3
+# 
+# bmh July 2011 
+#
+
+# Define my constants
+ftp_path="ftp://ftp.ncbi.nih.gov/genomes/H_sapiens/Assembled_chromosomes/seq/"
+ref="hs_alt_Hs_Celera_"
+chr="chrY"
+zip_ext=".gz"
+seq_ext=".fa"
+bucket="map-reduce-bmh/seq/"
+
+#Check for user overrides
+if [[ -n $1 ]]; then
+	echo "Default Chromosome, ${chr}, overriden to $1"
+	chr=$1	
+else
+	echo "Change Default Chromosome, ${chr}, by passing in a first argument"
+fi
+if [[ -n $2 ]]; then
+	echo "Default Reference, ${ref}, overriden to $2"
+	ref=$2	
+else
+	echo "Change Default Reference, ${ref}, by passing in a second argument"
+fi
+if [[ -n $3 ]]; then
+	echo "Default Bucket, ${bucket}, overriden to $3"
+	chr=$3	
+else
+	echo "Change Default Bucket, ${bucket}, by passing in a third argument"
+fi
+
+
+
+# Define out file names after considering user overrides
+unzipped_name=${ref}${chr}${seq_ext}
+zipped_name=${unzipped_name}${zip_ext}
+download_path=${ftp_path}${zipped_name}
+upload_path=${bucket}${unzipped_name}
+
+# Slosh data from nih to s3
+echo "getting file from $download_path"
+wget ${download_path}
+gunzip $zipped_name
+echo "putting file to $upload_path"
+s3put ${upload_path} ${unzipped_name}
+rm $unzipped_name
