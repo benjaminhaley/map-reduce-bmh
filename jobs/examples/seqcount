@@ -1,0 +1,21 @@
+#!/bin/bash
+# Example creates word count job
+# from amazon's getting started guide
+#    see http://tinyurl.com/amazon-hadoop-getting-started
+#
+# bmh July 2011
+
+# Date is appended to output names to avoid naming conflicts
+ctime=$(date +"%s")
+
+# Where the data comes from
+mapper="s3n://map-reduce-bmh/scripts/seqSplitter.py"
+input="s3n://map-reduce-bmh/seq"
+output="s3n://map-reduce-bmh/temp-${ctime}"
+
+# Uses example dat on amazon's s3 cloud
+elastic-mapreduce --create --stream \
+--mapper ${mapper} \
+--input ${input} \
+--output ${output} \
+--reducer aggregate
